@@ -142,16 +142,16 @@ def create_job(sample, global_options):
     if sample.get_paired_end():
         for rep in range(0, sample.get_reps()*2,2):
             if rep == (sample.get_reps()*2-2):
-                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand gzip -c --readFilesIn ' + ' '.join(sample.get_filenames()[rep:rep+2]) + ' --outFileNamePrefix ' + '"$OUT_DIR""RUN_STAMP"_R' + str(display_rep) + '_' + ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' + '\n\n')
+                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand gzip -c --readFilesIn ' + ' '.join(sample.get_filenames()[rep:rep+2]) + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' + ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' + '\n\n')
             else:
-                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand gzip -c --readFilesIn ' + ' '.join(sample.get_filenames()[rep:rep+2]) + ' --outFileNamePrefix ' + '"$OUT_DIR""RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' +  ' &&' + '\n\n')
+                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand gzip -c --readFilesIn ' + ' '.join(sample.get_filenames()[rep:rep+2]) + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' +  ' &&' + '\n\n')
             display_rep += 1
     else:
         for rep in range(sample.get_reps()):
             if rep == sample.get_reps()-1:
-                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand gzip -c --readFilesIn ' + sample.get_filenames()[rep] + ' --outFileNamePrefix ' + '"$OUT_DIR""RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' + '\n\n')
+                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand gzip -c --readFilesIn ' + sample.get_filenames()[rep] + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' + '\n\n')
             else:
-                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand gzip -c --readFilesIn ' + sample.get_filenames()[rep] + ' --outFileNamePrefix ' + '"$OUT_DIR""RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' +  ' &&' + '\n\n')
+                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand gzip -c --readFilesIn ' + sample.get_filenames()[rep] + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' +  ' &&' + '\n\n')
             display_rep += 1
 
     return
@@ -164,6 +164,9 @@ def main():
     sample1 = get_sample_by_name(sample_config_prefix, 'leaf_control')
 
     create_job(sample1, global_options)
+
+    sample2 = get_sample_by_name(sample_config_prefix, 'leaf_short_drought')
+    create_job(sample2, global_options)
 
 if __name__ == '__main__':
     main()
