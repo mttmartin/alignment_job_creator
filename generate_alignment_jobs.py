@@ -55,7 +55,7 @@ class Sample:
         return self.paired_end
 
 class GlobalOptions:
-        def __init__(self, genome_location, gtf_location, output_directory, sample_configuration_directory, header, thread_number, STAR_location):
+        def __init__(self, genome_location, gtf_location, output_directory, sample_configuration_directory, header, thread_number, STAR_location, decompress_command):
             self.genome_location = genome_location
             self.gtf_location = gtf_location
             self.output_directory = output_directory
@@ -63,6 +63,7 @@ class GlobalOptions:
             self.header = header
             self.thread_number = thread_number
             self.STAR_location = STAR_location
+            self.decompress_command = decompress_command
 
         def get_genome_location(self):
             return self.genome_location
@@ -85,6 +86,9 @@ class GlobalOptions:
         def get_STAR_location(self):
             return self.STAR_location
 
+        def get_decompress_command(self):
+            return self.decompress_command
+
 def get_global_options(configuration_prefix):
     config = configparser.ConfigParser()
     global_config_filepath = configuration_prefix+"global.cfg"
@@ -106,7 +110,9 @@ def get_global_options(configuration_prefix):
 
     thread_number = int(config.get('global', 'thread_number'))
     STAR_location = config.get('global', 'STAR_location')
-    global_options = GlobalOptions(genome_location, gtf_location, output_directory, sample_configurations_directory, header, thread_number, STAR_location)
+
+    decompress_command = config.get('global', 'decompress_command')
+    global_options = GlobalOptions(genome_location, gtf_location, output_directory, sample_configurations_directory, header, thread_number, STAR_location,decompress_command)
     return global_options
 
 def create_job(sample, global_options):
@@ -142,16 +148,16 @@ def create_job(sample, global_options):
     if sample.get_paired_end():
         for rep in range(0, sample.get_reps()*2,2):
             if rep == (sample.get_reps()*2-2):
-                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand zcat --readFilesIn ' + ' '.join(sample.get_filenames()[rep:rep+2]) + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' + ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' + '\n\n')
+                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand ' + global_options.get_decompress_command() + ' --readFilesIn ' + ' '.join(sample.get_filenames()[rep:rep+2]) + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' + ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' + '\n\n')
             else:
-                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand zcat --readFilesIn ' + ' '.join(sample.get_filenames()[rep:rep+2]) + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' +  ' &&' + '\n\n')
+                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand ' + global_options.get_decompress_command() + ' --readFilesIn ' + ' '.join(sample.get_filenames()[rep:rep+2]) + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' +  ' &&' + '\n\n')
             display_rep += 1
     else:
         for rep in range(sample.get_reps()):
             if rep == sample.get_reps()-1:
-                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand zcat --readFilesIn ' + sample.get_filenames()[rep] + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' + '\n\n')
+                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand ' + global_options.get_decompress_command() + ' --readFilesIn ' + sample.get_filenames()[rep] + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' + '\n\n')
             else:
-                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand zcat --readFilesIn ' + sample.get_filenames()[rep] + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' +  ' &&' + '\n\n')
+                f.write(global_options.get_STAR_location() + ' --runThreadN $THREAD_NUM --genomeDir $GENOME_DIR --readFilesCommand ' + global_options.get_decompress_command() + ' --readFilesIn ' + sample.get_filenames()[rep] + ' --outFileNamePrefix ' + '"$OUT_DIR""$RUN_STAMP"_R' + str(display_rep) + '_' +  ' --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM GeneCounts --genomeLoad NoSharedMemory --sjdbGTFfile $GTF_FILE' +  ' &&' + '\n\n')
             display_rep += 1
 
     return
